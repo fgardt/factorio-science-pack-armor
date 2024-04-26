@@ -1,12 +1,16 @@
 {
-  "name": "[internal-mod-name]",
+  "name": "science-pack-armor",
   "version": "0.0.0",
-  "title": "[MOD DISPLAY NAME]",
-  "author": "[YOUR MODS.FACTORIO.COM USERNAME]",
-  "homepage": "[HOMEPAGE/REPO URL]",
-  "description": "[SHORT DESCRIPTION]",
+  "title": "Science Pack Armor",
+  "author": "fgardt",
+  "contact": "https://discord.gg/7aSMrCh6v8",
+  "homepage": "https://github.com/fgardt/factorio-science-pack-armor",
+  "description": "Ever wanted to have some high-tech armor?\n\nShould be compatible with all sorts of mods but nothing is guaranteed!\nHas potential to break other mods that introduce new science packs!",
   "factorio_version": "1.1",
   "dependencies": [
-    "base"
+    "base",
+    "(?) space-exploration-postprocess",
+    "(?) Krastorio2",
+    "(?) nullius"
   ]
 }
