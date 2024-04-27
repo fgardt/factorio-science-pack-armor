@@ -77,7 +77,7 @@ local function icon2layers(data, scale)
         local img = icon.icon
         local size = icon.icon_size or data.icon_size or 64
         local scale = (64 / size) * scale * (icon.scale or 1)
-        local shift = { 0, 0 }
+        local shift = { 0, -0.5 }
 
         local size1 = size
         if table_size(layers) > 0 then
