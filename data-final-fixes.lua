@@ -1,7 +1,10 @@
----@type table<data.ItemID, true>
+---@type table<data.ItemID, data.PrototypeBase>
 local science_packs = {}
 ---@type table<data.ItemID, data.TechnologyID>
 local tool_2_unlocking_tech = {}
+
+local tools = data.raw["tool"] or {}
+local items = data.raw["item"] or {}
 
 for _, tech in pairs(data.raw["technology"]) do
     if tech.hidden then goto continue end
@@ -11,7 +14,7 @@ for _, tech in pairs(data.raw["technology"]) do
 
     do
         ---@type table<data.ItemID, true>
-        local unlocks_tool = {}
+        local unlocks_item = {}
         for _, effect in pairs(effects) do
             if effect.type ~= "unlock-recipe" then goto continue end
 
@@ -22,8 +25,8 @@ for _, tech in pairs(data.raw["technology"]) do
                 if result.type ~= "item" then goto continue end
 
                 local res_name = result.name
-                if data.raw["tool"][res_name] then
-                    unlocks_tool[res_name] = true
+                if tools[res_name] or items[res_name] then
+                    unlocks_item[res_name] = true
                 end
 
                 ::continue::
@@ -32,11 +35,11 @@ for _, tech in pairs(data.raw["technology"]) do
             ::continue::
         end
 
-        -- if the tech only unlocks a single tool we can assume that the
-        -- technology icon is a high resolution version of the tool icon
+        -- if the tech only unlocks a single thing we can assume that the
+        -- technology icon is a high resolution version of the thing icon
         -- and can use it for the armor instead of the low resolution item icon
-        if table_size(unlocks_tool) == 1 then
-            local uname, _ = next(unlocks_tool)
+        if table_size(unlocks_item) == 1 then
+            local uname, _ = next(unlocks_item)
             ---@cast uname -?
 
             local existing_tech = tool_2_unlocking_tech[uname]
@@ -58,8 +61,10 @@ for _, tech in pairs(data.raw["technology"]) do
 
         -- only convert tool based science packs
         -- will not touch armors / repair packs
-        if data.raw["tool"][name] then
-            science_packs[name] = true
+        if tools[name] then
+            science_packs[name] = tools[name]
+        elseif items[name] then
+            science_packs[name] = items[name]
         end
     end
 
@@ -101,9 +106,13 @@ end
 
 local armors = {} ---@type data.ArmorPrototype[]
 local anims = {} ---@type data.CharacterArmorAnimation[]
-for name, info in pairs(science_packs) do
-    local pack = table.deepcopy(data.raw["tool"][name])
-    data.raw["tool"][name] = nil
+for name, proto in pairs(science_packs) do
+    local pack = table.deepcopy(proto) ---@type data.ToolPrototype
+    data.raw[proto.type][name] = nil
+
+    if not pack.durability then
+        pack.durability = 1
+    end
 
     pack.type = "armor"
     ---@cast pack data.ArmorPrototype
@@ -124,9 +133,7 @@ for name, info in pairs(science_packs) do
     end
 
     ---@type data.RotatedAnimation
-    local anim = {
-        layers = layers,
-    }
+    local anim = { layers = layers }
 
     local anim18 = table.deepcopy(anim)
     for _, layer in pairs(anim18.layers) do
@@ -151,11 +158,13 @@ for name, info in pairs(science_packs) do
         idle_with_gun = anim,
         running = anim,
         running_with_gun = anim18,
-        mining_with_tool = anim,
+        mining_with_tool = anim
     })
 end
 
-data:extend(armors)
+if #armors > 0 then
+    data:extend(armors)
+end
 
 -- if table_size(data.raw["tool"]) == 0 and table_size(armors) > 0 then
 --     local dummy = table.deepcopy(armors[1])
